@@ -8,11 +8,13 @@ import javax.persistence.*;
 @Entity
 public class Message {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_generator")
+    @SequenceGenerator(allocationSize = 1, name = "message_generator")
     private Long id;
 
     private String text;
     private String tag;
+    private String filename;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
