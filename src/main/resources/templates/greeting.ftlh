@@ -2,7 +2,8 @@
 
 <@c.page>
 
-<div>Hello, user</div>
-<a href="/main">Main Page</a>
+<h5>Hello, guest</h5>
+
+    <div>This is a simple clone off Twitter</div>
 
 </@c.page>
