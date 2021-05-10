@@ -6,6 +6,7 @@
 <body>
     <div>
         <@l.logout></@l.logout>
+        <span><a href="/user">User list</a></span>
     </div>
     <div>
         <form method="post">
