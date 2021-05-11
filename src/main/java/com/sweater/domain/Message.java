@@ -8,8 +8,7 @@ import javax.persistence.*;
 @Entity
 public class Message {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_generator")
-    @SequenceGenerator(allocationSize = 1, name = "message_generator")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     private String text;
