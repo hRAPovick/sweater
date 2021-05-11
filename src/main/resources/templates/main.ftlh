@@ -47,7 +47,7 @@
         <#list messages as message>
             <div class="card my-3">
                 <#if message.filename??>
-                    <img src="/img/${message.filename}" class="card-img-top" alt="image">
+                    <img src="../uploads/${message.filename}" class="card-img-top" alt="image">
                 </#if>
                 <div class="m-2">
                     <span>${message.text}</span>

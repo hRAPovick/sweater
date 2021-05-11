@@ -62,7 +62,7 @@ public class MainController {
         message.setAuthor(user);
 
         if (file != null && !Objects.requireNonNull(file.getOriginalFilename()).isEmpty()) {
-            File uploadDir = new File(uploadPath);
+            File uploadDir = new File(System.getProperty("user.dir") + "\\src\\" + uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdir();
             }
@@ -70,7 +70,7 @@ public class MainController {
             String uuidFile = UUID.randomUUID().toString();
             String resultFilename = uuidFile + "." + file.getOriginalFilename();
 
-            file.transferTo(new File(uploadPath + "/" + resultFilename));
+            file.transferTo(new File(uploadDir.getAbsolutePath() + "/" + resultFilename));
 
             message.setFilename(resultFilename);
         }
