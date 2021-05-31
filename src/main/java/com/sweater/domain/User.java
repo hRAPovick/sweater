@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -41,6 +42,23 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Message> messages;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_subscriptions",
+            joinColumns = {@JoinColumn(name = "channel_id")},
+            inverseJoinColumns = {@JoinColumn(name = "subscriber_id")}
+    )
+    private Set<User> subscribers = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_subscriptions",
+            joinColumns = {@JoinColumn(name = "subscriber_id")},
+            inverseJoinColumns = {@JoinColumn(name = "channel_id")}
+    )
+    private Set<User> subscriptions = new HashSet<>();
+
 
     public boolean isAdmin() {
         return roles.contains(Role.ADMIN);
@@ -92,7 +110,7 @@ public class User implements UserDetails {
         result = 31 * result + username.hashCode();
         result = 31 * result + password.hashCode();
         result = 31 * result + (active ? 1 : 0);
-        result = 31 * result + email.hashCode();
+        result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (activationCode != null ? activationCode.hashCode() : 0);
         return result;
     }
