@@ -66,11 +66,8 @@ public class UserService implements UserDetailsService {
         if(user == null) {
             return false;
         }
-
         user.setActivationCode(null);
-
         userRepository.save(user);
-
         return true;
     }
 
