@@ -6,6 +6,10 @@ import com.sweater.service.MessageService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,7 +27,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
 @Controller
@@ -42,16 +45,20 @@ public class MainController {
     }
 
     @GetMapping("/main")
-    public String main(@RequestParam(required = false, defaultValue = "") String filter, Model model) {
-        Iterable<Message> messages;
+    public String main(
+            @RequestParam(required = false, defaultValue = "") String filter,
+            Model model,
+            @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<Message> page;
 
         if (filter != null && !filter.isEmpty()) {
-            messages = messageService.findByTag(filter);
+            page = messageService.findByTag(filter, pageable);
         } else {
-            messages = messageService.findAll();
+            page = messageService.findAll(pageable);
         }
 
-        model.addAttribute("messages", messages);
+        model.addAttribute("page", page);
+        model.addAttribute("url", "/main");
         model.addAttribute("filter", filter);
         return "main";
     }
@@ -62,7 +69,8 @@ public class MainController {
             @Valid Message message,
             BindingResult bindingResult,
             Model model,
-            @RequestParam("file") MultipartFile file
+            @RequestParam("file") MultipartFile file,
+            @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable
     ) throws IOException, URISyntaxException {
         message.setAuthor(user);
         if (bindingResult.hasErrors()) {
@@ -74,7 +82,7 @@ public class MainController {
             model.addAttribute("message", null);
             messageService.save(message);
         }
-        Iterable<Message> messages = messageService.findAll();
+        Page<Message> messages = messageService.findAll(pageable);
         model.addAttribute("messages", messages);
         return "main";
     }
@@ -84,7 +92,7 @@ public class MainController {
             @RequestParam("file") MultipartFile file) throws IOException, URISyntaxException {
         if (file != null && !Objects.requireNonNull(file.getOriginalFilename()).isEmpty()) {
             URL dirURL = MainController.class.getClassLoader().getResource(uploadPath);
-            File uploadDir = null;
+            File uploadDir;
             if (dirURL != null && dirURL.getProtocol().equals("file")) {
                 /* A file path: easy enough */
                 uploadDir = new File(dirURL.toURI());
