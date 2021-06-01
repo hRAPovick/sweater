@@ -118,18 +118,19 @@ public class MainController {
             @AuthenticationPrincipal User currentUser,
             @PathVariable User user,
             Model model,
-            @RequestParam(required = false) Message message
+            @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Iterable<Message> messages = messageService.findByAuthor(user);
+        Page<Message> page = messageService.findByAuthor(user, pageable);
 
         model.addAttribute("userChannel", user);
         model.addAttribute("subscriptionsCount", user.getSubscriptions().size());
         model.addAttribute("subscribersCount", user.getSubscribers().size());
         model.addAttribute("isSubscriber", user.getSubscribers().contains(currentUser));
 
-        model.addAttribute("messages", messages);
-        model.addAttribute("message", message);
         model.addAttribute("isCurrentUser", (currentUser.getId()).equals(user.getId()));
+
+        model.addAttribute("page", page);
+        model.addAttribute("url", "/user-messages/" + user.getId());
 
         return "userMessages";
     }

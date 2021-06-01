@@ -12,5 +12,5 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
 
     Page<Message> findByTag(String tag, Pageable pageable);
 
-    Iterable<Message> findByAuthor(User author);
+    Page<Message> findByAuthor(User author, Pageable pageable);
 }

@@ -15,8 +15,8 @@ public class MessageService {
     @Autowired
     private MessageRepository messageRepository;
 
-    public Iterable<Message> findByAuthor(User author) {
-        return messageRepository.findByAuthor(author);
+    public Page<Message> findByAuthor(User author, Pageable pageable) {
+        return messageRepository.findByAuthor(author, pageable);
     }
 
     public Page<Message> findByTag(String filter, Pageable pageable) {
