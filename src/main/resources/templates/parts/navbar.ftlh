@@ -1,5 +1,5 @@
-<#include "security.ftlh">
-<#import 'login.ftlh' as l>
+<#include "security.ftlh" />
+<#import 'login.ftlh' as l />
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="#">Sweater</a>

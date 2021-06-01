@@ -1,6 +1,6 @@
 <#assign
     know = Session.SPRING_SECURITY_CONTEXT??
-    >
+    />
 
 <#if know>
     <#assign
@@ -8,7 +8,7 @@
         name = user.getUsername()
         isAdmin = user.isAdmin()
         currentUserId = user.getId()
-        >
+        />
     <#else>
         <#assign
             name = "unknown"
