@@ -2,6 +2,7 @@ package com.sweater.controller;
 
 import com.sweater.domain.Message;
 import com.sweater.domain.User;
+import com.sweater.domain.dto.MessageDto;
 import com.sweater.service.MessageService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +15,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.io.File;
@@ -27,10 +28,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Controller
-public class MainController {
+public class MessageController {
 
     @Autowired
     private MessageService messageService;
@@ -46,15 +48,16 @@ public class MainController {
 
     @GetMapping("/main")
     public String main(
+            @AuthenticationPrincipal User user,
             @RequestParam(required = false, defaultValue = "") String filter,
             Model model,
             @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<Message> page;
+        Page<MessageDto> page;
 
         if (filter != null && !filter.isEmpty()) {
             page = messageService.findByTag(filter, pageable);
         } else {
-            page = messageService.findAll(pageable);
+            page = messageService.findAll(pageable, user);
         }
 
         model.addAttribute("page", page);
@@ -82,16 +85,16 @@ public class MainController {
             model.addAttribute("message", null);
             messageService.save(message);
         }
-        Page<Message> messages = messageService.findAll(pageable);
+        Page<MessageDto> messages = messageService.findAll(pageable, user);
         model.addAttribute("messages", messages);
-        return "main";
+        return "redirect:/main";
     }
 
     private void saveFile(
             @Valid Message message,
             @RequestParam("file") MultipartFile file) throws IOException, URISyntaxException {
         if (file != null && !Objects.requireNonNull(file.getOriginalFilename()).isEmpty()) {
-            URL dirURL = MainController.class.getClassLoader().getResource(uploadPath);
+            URL dirURL = MessageController.class.getClassLoader().getResource(uploadPath);
             File uploadDir;
             if (dirURL != null && dirURL.getProtocol().equals("file")) {
                 /* A file path: easy enough */
@@ -120,7 +123,7 @@ public class MainController {
             Model model,
             @PageableDefault(sort = {"id"}, direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        Page<Message> page = messageService.findByAuthor(user, pageable);
+        Page<MessageDto> page = messageService.findByAuthor(user, currentUser, pageable);
 
         model.addAttribute("userChannel", user);
         model.addAttribute("subscriptionsCount", user.getSubscriptions().size());
@@ -156,6 +159,29 @@ public class MainController {
         }
 
         return "redirect:/user-messages/" + user;
+    }
+
+    @GetMapping("/messages/{message}/like")
+    public String like(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Message message,
+            RedirectAttributes redirectAttributes,
+            @RequestHeader(required = false) String referer
+    ) {
+        Set<User> likes = message.getLikes();
+
+        if (likes.contains(currentUser)) {
+            likes.remove(currentUser);
+        } else {
+            likes.add(currentUser);
+        }
+        messageService.save(message);
+
+        UriComponents components = UriComponentsBuilder.fromHttpUrl(referer).build();
+
+        components.getQueryParams().forEach(redirectAttributes::addAttribute);
+
+        return "redirect:" + components.getPath();
     }
 
 }

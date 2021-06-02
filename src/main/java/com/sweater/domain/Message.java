@@ -1,5 +1,6 @@
 package com.sweater.domain;
 
+import com.sweater.domain.util.MessageHelper;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,9 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -25,12 +29,20 @@ public class Message {
 
     private String filename;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToMany
+    @JoinTable(
+            name = "message_likes",
+            joinColumns = { @JoinColumn(name = "message_id")},
+            inverseJoinColumns = { @JoinColumn(name = "user_id")}
+    )
+    private Set<User> likes = new HashSet<>();
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User author;
 
     public String getAuthorName() {
-        return author !=null ? author.getUsername() : "<none>";
+        return MessageHelper.getAuthorName(author);
     }
 
     @Override
@@ -42,8 +54,8 @@ public class Message {
 
         if (!id.equals(message.id)) return false;
         if (!text.equals(message.text)) return false;
-        if (tag != null ? !tag.equals(message.tag) : message.tag != null) return false;
-        return filename != null ? filename.equals(message.filename) : message.filename == null;
+        if (!Objects.equals(tag, message.tag)) return false;
+        return Objects.equals(filename, message.filename);
     }
 
     @Override
