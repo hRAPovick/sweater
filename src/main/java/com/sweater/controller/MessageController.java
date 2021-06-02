@@ -85,9 +85,10 @@ public class MessageController {
             model.addAttribute("message", null);
             messageService.save(message);
         }
-        Page<MessageDto> messages = messageService.findAll(pageable, user);
-        model.addAttribute("messages", messages);
-        return "redirect:/main";
+        Page<MessageDto> page = messageService.findAll(pageable, user);
+        model.addAttribute("page", page);
+        model.addAttribute("url", "/main");
+        return "main";
     }
 
     private void saveFile(
